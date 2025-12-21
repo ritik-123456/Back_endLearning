@@ -1,8 +1,8 @@
 const mongoose=require('mongoose');
 require('dotenv').config() //must required for using dot env datas
 //Defining URL
-//const mongoURL=process.env.LOCAL_DB  //local Server
-const mongoURL=process.env.MONGODB_URL;  //ONLINE SERVER
+const mongoURL=process.env.LOCAL_DB  //local Server
+//const mongoURL=process.env.MONGODB_URL;  //ONLINE SERVER
 
 //seting up the connection
 mongoose.connect(mongoURL

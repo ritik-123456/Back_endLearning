@@ -13,6 +13,13 @@ app.use(bodyParser.json()); //req.body
 // console.log(req.a);
 app.use(express.json())
 
+//Middleware Function
+const logRequest=(req,res,next)=>{
+  console.log(`[${new Date().toLocaleString()}] Request made to :${req.originalUrl}`);
+  next(); //Move on to the next phase
+}
+
+app.use(logRequest);
 
 app.get('/', (req, res) => {
   res.send('Welcome to our hotel')
