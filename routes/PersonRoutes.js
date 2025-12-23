@@ -3,9 +3,10 @@ const express=require('express');
 const router=express.Router();
 const Person=require('./../models/Person');
 const { route } = require('./menuRoutes');
+const {jwtAuthMiddleware,generateToken}=require('./../jwt');
 
 //creation
-router.post('/',async(req,res)=>{ 
+router.post('/signup',async(req,res)=>{ 
   try{
     const data=req.body //Assuming the request body contains the person data
 
@@ -15,7 +16,17 @@ router.post('/',async(req,res)=>{
     //save the new new person to the database
     const response=await newPerson.save(); //have to wait untill the newPerson is not saved
     console.log('data saved');
-    res.status(200).json(response);
+
+    //token generation while sign up
+    //crating payload
+    const payload={
+      "id":response.id,
+      "username":response.username
+    }
+    const token=generateToken(payload);
+    console.log('token is',token);
+
+    res.status(200).json({'response':response,'token':token});
   }
   catch(err){
     console.log(err);
@@ -23,8 +34,51 @@ router.post('/',async(req,res)=>{
   }
 });
 
-//reading..
-router.get('/',async(req,res)=>{
+//for login
+router.post('/login',async(req,res)=>{
+  try{
+    const {username,password}=req.body;
+
+   const user=await Person.findOne({username:username});
+
+   //If user doesnot exist
+   if(!user || !(await user.comparePassword(password))){
+    return res.status(401).json({error:'Invalid username or password'})
+   }
+
+   //generate Token
+   const payload={
+    id:user.id,
+    username:user.username
+   }
+   const token=generateToken(payload);
+
+   //return token as response
+   res.json({token});
+  }catch(err){
+    console.log('login error',err);
+    res.status(500).json({error:'Internal Server Error'});
+  }
+})
+
+router.get('/profile',jwtAuthMiddleware,async(req,res)=>{
+  try{
+    const userData=req.user;
+    console.log("user Data",userData);
+
+    const userId=userData.id;
+    const user=await Person.findById(userId);
+
+    res.status(200).json({user});
+
+  }catch(err){
+    console.log('login error',err);
+    res.status(500).json({error:'Internal Server Error'});
+  }
+})
+
+//reading..->to get the person details 
+router.get('/',jwtAuthMiddleware,async(req,res)=>{
   try{
     const data=await Person.find();
     console.log(data);

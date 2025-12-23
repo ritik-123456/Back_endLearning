@@ -3,9 +3,9 @@ const app = express()
 const db=require('./db')
 const db2=require('./db2')
 require('dotenv').config();
-
 const bodyParser=require('body-parser');
 app.use(bodyParser.json()); //req.body
+const passport=require('./auth');
 
 // const req = require('./req')
 
@@ -18,10 +18,12 @@ const logRequest=(req,res,next)=>{
   console.log(`[${new Date().toLocaleString()}] Request made to :${req.originalUrl}`);
   next(); //Move on to the next phase
 }
-
 app.use(logRequest);
 
-app.get('/', (req, res) => {
+app.use(passport.initialize());
+const LocalAuthMiddleware=passport.authenticate('local',{session:false});
+
+app.get('/',(req,res) => {
   res.send('Welcome to our hotel')
 })
 
